@@ -8,14 +8,33 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @State private var movingCircle = CGSize.zero
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack {
+            Circle()
+                .foregroundColor(.yellow)
+            ZStack {
+                Circle()
+                    .foregroundColor(.red)
+                Image(systemName: "cloud.sun.rain.fill")
+                    .resizable()
+                    .frame(width: 80, height: 75)
+            }
+            .offset(movingCircle)
+            .gesture(
+                DragGesture()
+                    .onChanged { movingCircle = $0.translation }
+                    .onEnded { _ in
+                        withAnimation(.spring) {
+                            movingCircle = .zero
+                        }
+                        
+                    }
+            )
         }
-        .padding()
+        .frame(width: 150)
     }
 }
 
