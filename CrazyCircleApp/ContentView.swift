@@ -9,32 +9,69 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @State private var movingCircle = CGSize.zero
+    @State private var movingCircle: CGSize = .zero
     
     var body: some View {
-        ZStack {
-            Circle()
-                .foregroundColor(.yellow)
-            ZStack {
-                Circle()
-                    .foregroundColor(.red)
+        Rectangle()
+            .fill(
+                RadialGradient(
+                    gradient: .init(colors: [Color.yellow, Color.red]),
+                    center: .center,
+                    startRadius: 50,
+                    endRadius: 150
+                )
+            )
+            .mask {
+                Canvas { context, size in
+                    
+                    context.addFilter(.alphaThreshold(min: 0.5))
+                    context.addFilter(.blur(radius: 20))
+                    
+                    context.drawLayer { context in
+                        context.draw(
+                            context.resolveSymbol(id: 0)!,
+                            at: CGPoint(
+                                x: UIScreen.main.bounds.midX,
+                                y: UIScreen.main.bounds.midY
+                            )
+                        )
+                        context.draw(
+                            context.resolveSymbol(id: 1)!,
+                            at: CGPoint(
+                                x: UIScreen.main.bounds.midX,
+                                y: UIScreen.main.bounds.midY
+                            )
+                        )
+                    }
+                    
+                } symbols: {
+                    Circle()
+                        .frame(width: 150)
+                        .tag(0)
+                    Circle()
+                        .frame(width: 150)
+                        .offset(movingCircle)
+                        .tag(1)
+                }
+            }
+            .overlay {
                 Image(systemName: "cloud.sun.rain.fill")
                     .resizable()
-                    .frame(width: 80, height: 75)
+                    .frame(width: 85, height: 80)
+                    .offset(movingCircle)
+                    .symbolRenderingMode(.hierarchical)
             }
-            .offset(movingCircle)
             .gesture(
                 DragGesture()
                     .onChanged { movingCircle = $0.translation }
                     .onEnded { _ in
-                        withAnimation(.spring) {
+                        withAnimation(.interpolatingSpring(stiffness: 180, damping: 20)) {
                             movingCircle = .zero
                         }
                         
                     }
             )
-        }
-        .frame(width: 150)
+            .ignoresSafeArea()
     }
 }
 
